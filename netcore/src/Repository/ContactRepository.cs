@@ -39,7 +39,7 @@ namespace Contacts.Repository
         public Contact Save(Contact entity)
         {
             entity.Id = allContacts.Count + 1;
-            entity.UserId = 1;
+            entity.UserId = entity.Id;
             allContacts.Add(entity.Email, entity);
 
             return entity;

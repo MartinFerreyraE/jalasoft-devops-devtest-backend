@@ -1,6 +1,7 @@
 using Contacts.Exceptions;
 using Contacts.Models;
 using Contacts.Repository;
+using Contacts.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Contacts.Controllers
@@ -8,12 +9,14 @@ namespace Contacts.Controllers
     [ApiController]
     [Route("[controller]")]
     public class UserController : ControllerBase
-    { 
+    {
+        private IEmailService _emailService;
         private IUserRepository _userRepository;
         
-        public UserController(IUserRepository repository) 
+        public UserController(IUserRepository repository, IEmailService emailService) 
         {
             _userRepository = repository;
+            _emailService = emailService;
         }
 
         [HttpPost("/users")]
@@ -21,7 +24,9 @@ namespace Contacts.Controllers
         {
             ValidateUserFields(inputUser);
             var user = _userRepository.Save(inputUser);
-            return user.TemporalCode.ToString().Substring(0, 6);
+            var temporalCode = user.TemporalCode.ToString().Substring(0, 6);
+            _emailService.SendEmail(inputUser.Username, $"this is your verification code: {temporalCode}");
+            return temporalCode;
         }
 
         [HttpPost("/sign-in")]
@@ -45,9 +50,10 @@ namespace Contacts.Controllers
         }
 
         [HttpGet("/users/{code}")]
-        public ActionResult<bool> RetrieveUsers(string code) 
+        public ActionResult<User> RetrieveUsers(string code) 
         {
-            return _userRepository.FindByCode(code) != null;
+            var user = _userRepository.FindByCode(code);
+            return user;
         }
 
         private void ValidateUserFields(User user)

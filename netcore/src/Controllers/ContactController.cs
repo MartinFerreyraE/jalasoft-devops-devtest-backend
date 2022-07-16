@@ -24,6 +24,19 @@ namespace Contacts.Controllers
             return _contactRepository.FindAll().ToList();
         }
 
+        [HttpGet("/contacts/search/{searchString}")]
+        public ActionResult<IEnumerable<Contact>> RetrieveContactBySearch(string searchString)
+        {
+            var contactByEmail = _contactRepository.FindByEmail(searchString);
+            var contactsByName = _contactRepository.FindByName(searchString);
+            var contacts = contactsByName != null ? contactsByName.ToList() : new List<Contact>();
+            if (contactByEmail != null)
+            {
+                contacts.Add(contactByEmail);
+            }    
+            return contacts;
+        }
+
         [HttpGet("/contacts/{id}")]
         public ActionResult<Contact> RetrieveContactById(long id)
         {

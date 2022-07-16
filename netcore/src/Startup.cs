@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Contacts.Repository;
 using Contacts.Exceptions;
+using Contacts.Services;
+using MySqlConnector;
 
 namespace Contacts
 {
@@ -21,10 +23,12 @@ namespace Contacts
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCors();
-            
+            services.AddTransient<MySqlConnection>(_ => new MySqlConnection(Configuration["ConnectionString"]));
+
             services.Add(new ServiceDescriptor(typeof(IUserRepository), new UserRepository()));
             services.Add(new ServiceDescriptor(typeof(IContactRepository), new ContactRepository()));
             services.Add(new ServiceDescriptor(typeof(IMessageRepository), new MessageRepository()));
+            services.AddTransient<IEmailService, EmailService>();
 
             services.AddControllers(options => options.Filters.Add(new ApiExceptionFilter()));
 
